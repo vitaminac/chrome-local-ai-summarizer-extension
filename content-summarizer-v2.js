@@ -23,11 +23,9 @@
         return;
       }
 
-      const options = msg.options || {};
-
       let summarizer;
       try {
-        summarizer = await Summarizer.create(options);
+        summarizer = await Summarizer.create(msg.options);
       } catch (e) {
         chrome.runtime.sendMessage({ type: 'summary-error', error: 'Error creating summarizer: ' + (e && e.message ? e.message : String(e)) });
         return;
@@ -36,7 +34,7 @@
       try {
         // Do NOT truncate locally. Instead rely on the summarizer instruction included
         // in options.context (for example: "Please limit the summary to at most N words...").
-        const stream = await summarizer.summarizeStreaming(text, { context: options.context || '' });
+        const stream = await summarizer.summarizeStreaming(text, msg.options);
         let acc = '';
         for await (const chunk of stream) {
           const chunkStr = typeof chunk === 'string' ? chunk : JSON.stringify(chunk);

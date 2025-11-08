@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
           type: 'key-points',
           format: 'plain-text',
           length: lengthBucket,
-          context: 'Summarize the visible text of this page.'
+          context: document.title || ''
         }
       });
     } catch (err) {
