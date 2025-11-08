@@ -3,14 +3,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearBtn = document.getElementById('clearBtn');
   const status = document.getElementById('status');
   const output = document.getElementById('output');
-
   clearBtn.addEventListener('click', () => {
     output.value = '';
     status.textContent = '';
   });
 
+  // Keep track of which tab we are summarizing so we only accept messages for that tab
+  let activeTabId = null;
+
+  // Receive streaming chunks from the content script
+  chrome.runtime.onMessage.addListener((msg, sender) => {
+    if (!sender || !sender.tab) return;
+    if (sender.tab.id !== activeTabId) return; // ignore messages from other tabs
+
+    if (msg.type === 'summary-chunk') {
+      // append chunk progressively
+      output.value += msg.chunk;
+      status.textContent = 'Summarizing...';
+    } else if (msg.type === 'summary-done') {
+      status.textContent = 'Summary complete';
+      // ensure final text present
+      if (msg.summary) output.value = msg.summary;
+      activeTabId = null;
+    } else if (msg.type === 'summary-error') {
+      status.textContent = 'Error: ' + (msg.error || 'Unknown');
+      activeTabId = null;
+    }
+  });
+
   summarizeBtn.addEventListener('click', async () => {
-    status.textContent = 'Getting page text...';
+    status.textContent = 'Preparing to summarize...';
     output.value = '';
 
     try {
@@ -20,70 +42,31 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       const tab = tabs[0];
+      activeTabId = tab.id;
 
-      status.textContent = 'Running summarization in page context...';
+      status.textContent = 'Injecting summarizer script into page...';
 
-      const results = await chrome.scripting.executeScript({
+      // Inject our content script file (runs as a content script and can use chrome.runtime)
+      await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: async () => {
-          try {
-            if (!('Summarizer' in self)) {
-              return { error: 'Summarizer API not available in this browser or page.' };
-            }
-
-            const availability = await Summarizer.availability();
-            if (availability === 'unavailable') {
-              return { error: 'Summarizer model is unavailable on this device.' };
-            }
-
-            // Use the visible text of the page
-            const text = document.body && document.body.innerText ? document.body.innerText : '';
-            if (!text || !text.trim()) {
-              return { error: 'No text found on the page.' };
-            }
-
-            // Create a summarizer. This must be done in a user-activated context where possible.
-            const options = {
-              type: 'key-points',
-              format: 'plain-text',
-              length: 'short',
-              monitor(m) {
-                // no-op monitor; download progress events can be observed here if needed
-                m.addEventListener('downloadprogress', () => {});
-              }
-            };
-
-            // If user activation is required, navigator.userActivation.isActive can be checked here.
-            try {
-              const summarizer = await Summarizer.create(options);
-              const summary = await summarizer.summarize(text, { context: 'Summarize the visible text of this page.' });
-
-              // summary may be a string; ensure we return a string
-              return { summary: String(summary) };
-            } catch (e) {
-              return { error: 'Error creating or running summarizer: ' + (e && e.message ? e.message : String(e)) };
-            }
-          } catch (err) {
-            return { error: 'Unexpected error in page script: ' + (err && err.message ? err.message : String(err)) };
-          }
-        }
+        files: ['content-summarizer.js']
       });
 
-      // results is an array of InjectionResult objects; take first
-      const r = results && results[0] && results[0].result ? results[0].result : null;
-      if (!r) {
-        status.textContent = 'No result from page script.';
-        return;
-      }
-      if (r.error) {
-        status.textContent = 'Error: ' + r.error;
-        return;
-      }
+      status.textContent = 'Starting streaming summarization...';
 
-      status.textContent = 'Summary ready';
-      output.value = r.summary || '';
+      // Send a message to the content script to start summarization. Options can be customized.
+      await chrome.tabs.sendMessage(tab.id, {
+        type: 'start-summarize',
+        options: {
+          type: 'key-points',
+          format: 'plain-text',
+          length: 'short',
+          context: 'Summarize the visible text of this page.'
+        }
+      });
     } catch (err) {
       status.textContent = 'Extension error: ' + (err && err.message ? err.message : String(err));
+      activeTabId = null;
     }
   });
 });
