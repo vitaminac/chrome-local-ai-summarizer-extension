@@ -3,6 +3,7 @@
   "name": "AI Summarizer",
   "version": "1.1",
   "description": "Summarize the visible text of the current page using Chrome built-in Summarizer API.",
+  "minimum_chrome_version": "138",
   "permissions": ["scripting", "activeTab"],
   "host_permissions": ["<all_urls>"],
   "action": {
