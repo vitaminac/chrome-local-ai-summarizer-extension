@@ -30,32 +30,42 @@ document.addEventListener('DOMContentLoaded', async () => {
   await chrome.scripting.executeScript({ target: { tabId: activeTab.id }, files: ['content.js'] });
 
   chrome.runtime.onMessage.addListener(async (msg, sender) => {
+    if (!msg || !msg.type) return;
+
+    // selected-element messages come from the content script and include sender.tab
+    if (msg.type === 'selected-element') {
+      if (!sender || !sender.tab || !sender.tab.id || sender.tab.id !== activeTab.id) return;
+      if (msg.text) {
+        status.textContent = 'Selected element — summarizing...';
+        startSummarizeWithText(msg.text);
+      } else {
+        status.textContent = 'Selection canceled or empty.';
+      }
+      return;
+    }
+
+    // For all other messages, ensure they are for the active tab
+    if (!msg.tabId || msg.tabId !== activeTab.id) return;
+
     switch (msg.type) {
-      // if the content script notifies of a selected element
-      case "selected-element":
-        // ignore messages from other tabs
-        if (!sender || !sender.tab || !sender.tab.id || !sender.tab.id === activeTab.id) return;
-        if (msg.text) {
-          status.textContent = 'Selected element — summarizing...';
-          startSummarizeWithText(msg.text);
-        } else {
-          status.textContent = 'Selection canceled or empty.';
-        }
+      case 'download-progress':
+        status.textContent = `Downloading model — ${msg.loaded} of ${msg.total}`;
         break;
-      default:
-        // ignore messages from other tabs
-        if (!msg || !msg.tabId || msg.tabId !== activeTab.id) return;
-      // append chunk progressively into the textbox and keep it scrolled to bottom.
-      case "summary-chunk":
+      case 'download-complete':
+        status.textContent = 'Model ready — summarizing...';
+        break;
+      case 'summary-chunk':
         await updateContet();
         status.textContent = 'Summarizing...';
         break;
-      // summary was streamed via chunks already; just update status
-      case "summary-done":
+      case 'summary-done':
         status.textContent = 'Summary complete';
         break;
-      case "summary-error":
+      case 'summary-error':
         status.textContent = 'Error: ' + (msg.error || 'Unknown');
+        break;
+      default:
+        // ignore unknown message types
         break;
     }
   });
