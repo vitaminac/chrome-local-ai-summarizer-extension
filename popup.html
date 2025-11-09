@@ -1,41 +1,37 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Hello</title>
-    <style>
-      body { font-family: Arial, Helvetica, sans-serif; margin: 16px; width: 240px; }
-      #msg { font-size: 18px; margin-bottom: 12px; }
-      button { padding: 8px 12px; font-size: 14px; }
-      .row { display:flex; align-items:center; gap:8px }
-      img.icon { width:32px; height:32px }
-    </style>
-  </head>
-  <body>
-    <div class="row">
-      <div style="flex:1;">
-        <div style="margin-top:8px">
-          <label>Summary length:</label>
-          <div style="display:flex; gap:8px; margin-top:6px">
-            <label><input type="radio" name="length" value="short"> Short</label>
-            <label><input type="radio" name="length" value="medium" checked> Medium</label>
-            <label><input type="radio" name="length" value="long"> Long</label>
-          </div>
-        </div>
 
-        <div style="margin-top:8px; display:flex; gap:8px">
-          <button id="summarizeBtn">Summarize Entire Page</button>
-          <button id="selectBtn">Summarize Selected Element</button>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Hello</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <div class="row">
+    <div style="flex:1;">
+      <div style="margin-top:8px">
+        <label>Summary length:</label>
+        <div style="display:flex; gap:8px; margin-top:6px">
+          <label><input type="radio" name="length" value="short"> Short</label>
+          <label><input type="radio" name="length" value="medium" checked> Medium</label>
+          <label><input type="radio" name="length" value="long"> Long</label>
         </div>
       </div>
-    </div>
 
-    <div style="margin-top:12px">
-  <div id="status" style="font-size:12px;color:#666;margin-bottom:6px"></div>
-  <textarea id="output" aria-live="polite" role="region" style="width:100%;box-sizing:border-box;padding:8px;overflow:auto;border:1px solid #ddd;background:#fff;border-radius:4px;white-space:pre-wrap;min-height:80px;resize:vertical;transition:max-height 220ms ease"></textarea>
+      <div style="margin-top:8px; display:flex; gap:8px">
+        <button id="summarizeBtn">Summarize Entire Page</button>
+        <button id="selectBtn">Summarize Selected Element</button>
+      </div>
     </div>
+  </div>
 
-    <script src="popup.js"></script>
-  </body>
+  <div style="margin-top:12px">
+    <div id="status" style="font-size:12px;color:#666;margin-bottom:6px"></div>
+    <textarea id="output" aria-live="polite" role="region"></textarea>
+  </div>
+  <script src="popup.js"></script>
+</body>
+
 </html>

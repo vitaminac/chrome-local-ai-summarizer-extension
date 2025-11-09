@@ -1,0 +1,32 @@
+/* Styles extracted from popup.html */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 16px;
+  width: 240px;
+}
+
+button {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Output textarea styles */
+#output {
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  padding: 8px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 4px;
+  white-space: pre-wrap;
+  min-height: 80px;
+  transition: height 120ms ease;
+}
