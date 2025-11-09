@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const key = storageKeyForTab(activeTab.id);
     const items = await chrome.storage.local.get(key);
     const content = items[key] || "";
-    output.value = content;
+    // set textContent so the container grows with the text
+    output.textContent = content;
     output.scrollTop = output.scrollHeight;
   }
   updateContet();
@@ -62,8 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function startSummarizeWithText(textToSummarize) {
     status.textContent = 'Preparing to summarize...';
     // always clear previous content at the beginning of a new summarization.
-    output.value = '';
-    output.style.maxHeight = '0px';
+    output.textContent = '';
 
     try {
       status.textContent = 'starting streaming summarization...';

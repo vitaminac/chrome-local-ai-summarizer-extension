@@ -16,17 +16,18 @@ button {
   gap: 8px;
 }
 
-/* Output textarea styles */
 #output {
+  display: block;
   width: 100%;
-  height: auto;
   box-sizing: border-box;
   padding: 8px;
-  overflow: hidden;
   border: 1px solid #ddd;
   background: #fff;
   border-radius: 4px;
   white-space: pre-wrap;
-  min-height: 80px;
-  transition: height 120ms ease;
+  word-break: break-word;
+  /* let it grow with text content */
+  min-height: 0px;
+  max-height: 60vh;
+  overflow: auto;
 }
